@@ -2,7 +2,9 @@
 
 [![pub](https://img.shields.io/pub/v/directory_picker.svg)](https://pub.dev/packages/directory_picker)
 
-A flutter package to pick directories. This package only supports android.
+A flutter package to pick directories and handles requesting required permissions as well. This package only supports android.
+
+![Picker Screenshot](screenshots/picker_dialog.png)
 
 ## Installation  
   
