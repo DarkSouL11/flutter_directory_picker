@@ -4,13 +4,13 @@
 
 A flutter package to pick directories and handles requesting required permissions as well. This package only supports android.
 
-![Picker Screenshot](screenshots/picker_dialog.png)
+![Picker Screenshot](screenshots/picker.png)
 
 ## Installation  
   
 Add below line to your `pubspec.yaml` and run `flutter packages get`  
 ```  
-directory_pciker: ^0.0.1
+directory_picker: ^0.1.0
 ```
 
 ## Permissions

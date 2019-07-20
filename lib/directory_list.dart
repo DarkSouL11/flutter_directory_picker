@@ -50,8 +50,7 @@ class _DirectoryListState extends State<DirectoryList> {
         _buildBackNav(context),
         Expanded(
           child: Center(
-            child: Text('Directory is empty!', textAlign: TextAlign.center)
-          ),
+              child: Text('Directory is empty!', textAlign: TextAlign.center)),
         )
       ];
     } else {
@@ -59,15 +58,14 @@ class _DirectoryListState extends State<DirectoryList> {
         Expanded(
           child: ListView(
             scrollDirection: Axis.vertical,
-            children: [_buildBackNav(context)]..addAll(
-              directoryList.map((directory) {
+            children: [_buildBackNav(context)]
+              ..addAll(directoryList.map((directory) {
                 return ListTile(
                   leading: Icon(Icons.folder, color: theme.primaryColor),
                   title: Text(_getDirectoryName(directory)),
                   onTap: () => _setDirectory(directory),
                 );
-              }
-            )),
+              })),
           ),
         )
       ];
@@ -85,26 +83,23 @@ class _DirectoryListState extends State<DirectoryList> {
               children: [
                 Text('Selected directory', style: theme.textTheme.subtitle),
                 SizedBox(height: spacing / 2),
-                Text(
-                  currentDirectory?.path ?? '',
-                  style: theme.textTheme.caption
-                )
+                Text(currentDirectory?.path ?? '',
+                    style: theme.textTheme.caption)
               ],
               crossAxisAlignment: CrossAxisAlignment.start,
             ),
           ),
           SizedBox(height: 0, width: spacing),
           IconButton(
-            color: theme.primaryColor,
-            icon: Icon(Icons.check),
-            onPressed: () => Navigator.pop(context, currentDirectory)
-          )
+              color: theme.primaryColor,
+              icon: Icon(Icons.check),
+              onPressed: () => Navigator.pop(context, currentDirectory))
         ],
         mainAxisSize: MainAxisSize.max,
       ),
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: theme.primaryColor, width: 2))
-      ),
+          border:
+              Border(bottom: BorderSide(color: theme.primaryColor, width: 2))),
       padding: EdgeInsets.all(spacing),
     );
   }
@@ -135,10 +130,11 @@ class _DirectoryListState extends State<DirectoryList> {
   Future<void> _setDirectory(Directory directory) async {
     setState(() {
       try {
-        directoryList = directory.listSync()
-          .map<Directory>((fse) => (fse is Directory ? fse : null))
-          .toList()
-          ..removeWhere((fse) => fse == null);
+        directoryList = directory
+            .listSync()
+            .map<Directory>((fse) => (fse is Directory ? fse : null))
+            .toList()
+              ..removeWhere((fse) => fse == null);
         currentDirectory = directory;
       } catch (e) {
         // Ignore when tried navigating to directory that does not exist

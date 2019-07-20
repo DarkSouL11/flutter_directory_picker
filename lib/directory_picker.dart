@@ -14,32 +14,29 @@ class DirectoryPicker {
   /// external storage permission. A default message will be used if [message]
   /// is not specified. [rootDirectory] is the initial directory whose
   /// sub directories are shown for picking
-  static Future<Directory> pick({
-    @required BuildContext context,
-    bool barrierDismissible = true,
-    Color backgroundColor,
-    @required Directory rootDirectory,
-    String message,
-    ShapeBorder shape
-  }) async {
+  static Future<Directory> pick(
+      {@required BuildContext context,
+      bool barrierDismissible = true,
+      Color backgroundColor,
+      @required Directory rootDirectory,
+      String message,
+      ShapeBorder shape}) async {
     assert(context != null, 'A non null context is required');
 
     if (Platform.isAndroid) {
       Directory directory = await showDialog<Directory>(
-        context: context,
-        barrierDismissible: barrierDismissible,
-        builder: (BuildContext context) {
-          return DirectoryPickerData(
-            child: Dialog(
-              backgroundColor: backgroundColor,
-              child: _DirectoryPickerDialog(),
-              shape: shape
-            ),
-            message: message,
-            rootDirectory: rootDirectory,
-          );
-        }
-      );
+          context: context,
+          barrierDismissible: barrierDismissible,
+          builder: (BuildContext context) {
+            return DirectoryPickerData(
+              child: Dialog(
+                  backgroundColor: backgroundColor,
+                  child: _DirectoryPickerDialog(),
+                  shape: shape),
+              message: message,
+              rootDirectory: rootDirectory,
+            );
+          });
 
       return directory;
     } else {
@@ -53,7 +50,7 @@ class DirectoryPickerData extends InheritedWidget {
   final Directory rootDirectory;
 
   DirectoryPickerData({Widget child, this.message, this.rootDirectory})
-    : super(child: child);
+      : super(child: child);
 
   static DirectoryPickerData of(BuildContext context) {
     return context.inheritFromWidgetOfExactType(DirectoryPickerData);
@@ -66,14 +63,12 @@ class DirectoryPickerData extends InheritedWidget {
 }
 
 class _DirectoryPickerDialog extends StatefulWidget {
-
   @override
   _DirectoryPickerDialogState createState() => _DirectoryPickerDialogState();
 }
 
 class _DirectoryPickerDialogState extends State<_DirectoryPickerDialog>
-  with WidgetsBindingObserver {
-
+    with WidgetsBindingObserver {
   static final double spacing = 8;
 
   PermissionStatus status;
@@ -86,7 +81,6 @@ class _DirectoryPickerDialogState extends State<_DirectoryPickerDialog>
     WidgetsBinding.instance.addObserver(this);
     _getPermissionStatus();
   }
-
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -105,8 +99,8 @@ class _DirectoryPickerDialogState extends State<_DirectoryPickerDialog>
   /// If silent is true then below function will not try to request permission
   /// if permission is not granter
   Future<void> _getPermissionStatus({bool silent = false}) async {
-    final newStatus = await SimplePermissions
-      .getPermissionStatus(Permission.ReadExternalStorage);
+    final newStatus = await SimplePermissions.getPermissionStatus(
+        Permission.ReadExternalStorage);
 
     print(newStatus);
     setState(() {
@@ -119,12 +113,10 @@ class _DirectoryPickerDialogState extends State<_DirectoryPickerDialog>
   }
 
   Future<void> _requestPermission() async {
-    if (
-      status == PermissionStatus.notDetermined ||
-      status == PermissionStatus.denied
-    ) {
-      final newStatus = await SimplePermissions
-        .requestPermission(Permission.ReadExternalStorage);
+    if (status == PermissionStatus.notDetermined ||
+        status == PermissionStatus.denied) {
+      final newStatus = await SimplePermissions.requestPermission(
+          Permission.ReadExternalStorage);
 
       setState(() {
         status = newStatus;
@@ -142,17 +134,16 @@ class _DirectoryPickerDialogState extends State<_DirectoryPickerDialog>
 
     if (status == null) {
       return Padding(
-        padding: EdgeInsets.all(spacing * 2),
-        child: Column(
-          children: <Widget>[
-            CircularProgressIndicator(),
-            SizedBox(height: spacing),
-            Text('Checking permission', textAlign: TextAlign.center)
-          ],
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.max,
-        )
-      );
+          padding: EdgeInsets.all(spacing * 2),
+          child: Column(
+            children: <Widget>[
+              CircularProgressIndicator(),
+              SizedBox(height: spacing),
+              Text('Checking permission', textAlign: TextAlign.center)
+            ],
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.max,
+          ));
     } else if (status == PermissionStatus.authorized) {
       return DirectoryList();
     } else if (status == PermissionStatus.restricted) {
@@ -167,29 +158,25 @@ class _DirectoryPickerDialogState extends State<_DirectoryPickerDialog>
       );
     } else {
       return Padding(
-        padding: EdgeInsets.all(spacing * 2),
-        child: Column(
-          children: <Widget>[
-            Text(message, textAlign: TextAlign.center),
-            SizedBox(height: spacing),
-            RaisedButton(
-              child: Text('Grant Permission'),
-              color: theme.primaryColor,
-              onPressed: _requestPermission
-            )
-          ],
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.max,
-        )
-      );
+          padding: EdgeInsets.all(spacing * 2),
+          child: Column(
+            children: <Widget>[
+              Text(message, textAlign: TextAlign.center),
+              SizedBox(height: spacing),
+              RaisedButton(
+                  child: Text('Grant Permission'),
+                  color: theme.primaryColor,
+                  onPressed: _requestPermission)
+            ],
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.max,
+          ));
     }
   }
 
   bool get canAskPermission {
-    return [
-      PermissionStatus.denied,
-      PermissionStatus.notDetermined
-    ].contains(status);
+    return [PermissionStatus.denied, PermissionStatus.notDetermined]
+        .contains(status);
   }
 
   String get message {
