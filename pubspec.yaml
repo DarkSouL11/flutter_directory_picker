@@ -1,0 +1,20 @@
+name: directory_picker
+description: A flutter package to pick directories.
+version: 0.0.1
+author: Sundeep Babbur <sundeep.sundeep11@gmail.com>
+homepage: https://github.com/DarkSouL11/flutter_directory_picker
+
+environment:
+  sdk: ">=2.1.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  simple_permissions: ^0.1.9
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+# The following section is specific to Flutter.
+flutter:
