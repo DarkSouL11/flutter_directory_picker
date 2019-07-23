@@ -1,3 +1,7 @@
+## [0.2.1]
+
+- Added a missing dependency to `pubspec.yaml`.
+
 ## [0.2.0]
 
 - Now new folders can be created directly from directory picker. Enable it by passing `allowFolderCreation = true` to the picker. 
