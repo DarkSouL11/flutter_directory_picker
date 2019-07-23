@@ -1,9 +1,11 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:path/path.dart' as path;
 
 import 'directory_picker.dart';
 
+/// Internal widget used for rendering directory list
 class DirectoryList extends StatefulWidget {
   @override
   _DirectoryListState createState() => _DirectoryListState();
@@ -89,11 +91,21 @@ class _DirectoryListState extends State<DirectoryList> {
               crossAxisAlignment: CrossAxisAlignment.start,
             ),
           ),
-          SizedBox(height: 0, width: spacing),
-          IconButton(
-              color: theme.primaryColor,
-              icon: Icon(Icons.check),
-              onPressed: () => Navigator.pop(context, currentDirectory))
+          data.allowFolderCreation
+              ? Padding(
+                  child: IconButton(
+                      color: theme.primaryColor,
+                      icon: Icon(Icons.create_new_folder),
+                      onPressed: _createNewFolder),
+                  padding: EdgeInsets.only(left: spacing / 2))
+              : SizedBox(height: 0, width: 0),
+          Padding(
+            padding: EdgeInsets.only(left: spacing / 2),
+            child: IconButton(
+                color: theme.primaryColor,
+                icon: Icon(Icons.check),
+                onPressed: () => Navigator.pop(context, currentDirectory)),
+          )
         ],
         mainAxisSize: MainAxisSize.max,
       ),
@@ -123,8 +135,18 @@ class _DirectoryListState extends State<DirectoryList> {
   }
 
   Future<void> _init() async {
-    rootDirectory = DirectoryPickerData.of(context).rootDirectory;
+    rootDirectory = data.rootDirectory;
     _setDirectory(rootDirectory);
+  }
+
+  Future<void> _createNewFolder() async {
+    final newDirectory = await showDialog<Directory>(
+        builder: (_) => _NewFolderDialog(data: data, parent: currentDirectory),
+        context: context);
+
+    if (newDirectory != null) {
+      _setDirectory(newDirectory);
+    }
   }
 
   Future<void> _setDirectory(Directory directory) async {
@@ -139,11 +161,82 @@ class _DirectoryListState extends State<DirectoryList> {
       } catch (e) {
         // Ignore when tried navigating to directory that does not exist
         // or to which user does not have permission to read
+        print(e ?? 'Failed to read: ${directory.path}');
       }
     });
   }
 
   String _getDirectoryName(Directory directory) {
     return directory.path.split('/').last;
+  }
+
+  DirectoryPickerData get data => DirectoryPickerData.of(context);
+}
+
+class _NewFolderDialog extends StatefulWidget {
+  final DirectoryPickerData data;
+  final Directory parent;
+
+  _NewFolderDialog({this.data, this.parent});
+
+  @override
+  _NewFolderDialogState createState() => _NewFolderDialogState();
+}
+
+class _NewFolderDialogState extends State<_NewFolderDialog> {
+  String name;
+  bool isSubmitting = false;
+  String errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  Future<void> _createDirectory() async {
+    if (name == null || name.trim() == '') {
+      setState(() => errorMessage = 'Enter a valid folder name');
+      return;
+    }
+
+    try {
+      setState(() => isSubmitting = true);
+      Directory newDirectory =
+          await Directory(path.join(widget.parent.path, name)).create();
+      Navigator.pop(context, newDirectory);
+    } catch (e) {
+      setState(() => errorMessage = 'Failed to create folder');
+    }
+    setState(() => isSubmitting = false);
+  }
+
+  void _onNameChanged(String value) {
+    setState(() {
+      name = value;
+      errorMessage = null;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: widget.data.backgroundColor,
+      content: TextField(
+        autofocus: true,
+        decoration: InputDecoration(errorText: errorMessage),
+        onChanged: _onNameChanged,
+      ),
+      actions: <Widget>[
+        FlatButton(
+            child: Text('Cancel'),
+            onPressed: isSubmitting ? null : () => Navigator.pop(context)),
+        FlatButton(
+          child: Text('Create Folder'),
+          onPressed: isSubmitting ? null : _createDirectory,
+        )
+      ],
+      shape: widget.data.shape,
+      title: Text('Create New Folder'),
+    );
   }
 }

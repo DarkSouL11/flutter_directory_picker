@@ -38,13 +38,12 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     Directory newDirectory = await DirectoryPicker.pick(
-      context: context,
-      rootDirectory: directory,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(10))
-      )
-    );
-    
+        allowFolderCreation: true,
+        context: context,
+        rootDirectory: directory,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10))));
+
     setState(() {
       selectedDirectory = newDirectory;
     });
@@ -58,15 +57,22 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'Selected Directory: ${selectedDirectory?.path}',
-              style: theme.textTheme.title,
-            ),
-          ],
+      body: Padding(
+        padding: EdgeInsets.all(8.0),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text(
+                'Selected Directory:',
+                style: theme.textTheme.title,
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 8.0),
+              Text(selectedDirectory != null ? selectedDirectory.path : 'none',
+                  textAlign: TextAlign.center)
+            ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(

@@ -10,12 +10,17 @@ import 'directory_list.dart';
 class DirectoryPicker {
   /// Opens a dialog to allow user to pick a directory.
   ///
-  /// if [message] is non null then it is rendered when user denies to give
+  /// If [message] is non null then it is rendered when user denies to give
   /// external storage permission. A default message will be used if [message]
   /// is not specified. [rootDirectory] is the initial directory whose
   /// sub directories are shown for picking
+  ///
+  /// If [allowFolderCreation] is true then user will be allowed to create
+  /// new folders directly from the picker. Make sure that you add write
+  /// permission to manifest if you want to support folder creationa
   static Future<Directory> pick(
-      {@required BuildContext context,
+      {bool allowFolderCreation = false,
+      @required BuildContext context,
       bool barrierDismissible = true,
       Color backgroundColor,
       @required Directory rootDirectory,
@@ -29,13 +34,12 @@ class DirectoryPicker {
           barrierDismissible: barrierDismissible,
           builder: (BuildContext context) {
             return DirectoryPickerData(
-              child: Dialog(
-                  backgroundColor: backgroundColor,
-                  child: _DirectoryPickerDialog(),
-                  shape: shape),
-              message: message,
-              rootDirectory: rootDirectory,
-            );
+                allowFolderCreation: allowFolderCreation,
+                backgroundColor: backgroundColor,
+                child: _DirectoryPickerDialog(),
+                message: message,
+                rootDirectory: rootDirectory,
+                shape: shape);
           });
 
       return directory;
@@ -46,10 +50,19 @@ class DirectoryPicker {
 }
 
 class DirectoryPickerData extends InheritedWidget {
+  final bool allowFolderCreation;
+  final Color backgroundColor;
   final String message;
   final Directory rootDirectory;
+  final ShapeBorder shape;
 
-  DirectoryPickerData({Widget child, this.message, this.rootDirectory})
+  DirectoryPickerData(
+      {Widget child,
+      this.allowFolderCreation,
+      this.backgroundColor,
+      this.message,
+      this.rootDirectory,
+      this.shape})
       : super(child: child);
 
   static DirectoryPickerData of(BuildContext context) {
@@ -62,6 +75,13 @@ class DirectoryPickerData extends InheritedWidget {
   }
 }
 
+enum _PickerPermissionStatus {
+  authorized, // Given all required permissions
+  canPrompt, // Can prompt for missing permissions
+  grantFromSettings, // One or more permissions should be given from settings
+  restricted // one or more permissions cannot be granted in any way
+}
+
 class _DirectoryPickerDialog extends StatefulWidget {
   @override
   _DirectoryPickerDialogState createState() => _DirectoryPickerDialogState();
@@ -71,7 +91,7 @@ class _DirectoryPickerDialogState extends State<_DirectoryPickerDialog>
     with WidgetsBindingObserver {
   static final double spacing = 8;
 
-  PermissionStatus status;
+  List<PermissionStatus> statuses;
   bool checkingForPermission = false;
 
   @override
@@ -79,7 +99,7 @@ class _DirectoryPickerDialogState extends State<_DirectoryPickerDialog>
     super.initState();
 
     WidgetsBinding.instance.addObserver(this);
-    _getPermissionStatus();
+    Future.delayed(Duration.zero).then((_) => _getPermissionStatus());
   }
 
   @override
@@ -99,37 +119,37 @@ class _DirectoryPickerDialogState extends State<_DirectoryPickerDialog>
   /// If silent is true then below function will not try to request permission
   /// if permission is not granter
   Future<void> _getPermissionStatus({bool silent = false}) async {
-    final newStatus = await SimplePermissions.getPermissionStatus(
-        Permission.ReadExternalStorage);
+    Iterable<Future<PermissionStatus>> futures =
+        requiredPermissions.map((permission) {
+      return SimplePermissions.getPermissionStatus(permission);
+    });
+    final newStatuses = await Future.wait(futures);
 
-    print(newStatus);
     setState(() {
-      status = newStatus;
+      statuses = newStatuses;
     });
 
-    if (!silent && canAskPermission) {
+    if (!silent && status == _PickerPermissionStatus.canPrompt) {
       _requestPermission();
     }
   }
 
   Future<void> _requestPermission() async {
-    if (status == PermissionStatus.notDetermined ||
-        status == PermissionStatus.denied) {
-      final newStatus = await SimplePermissions.requestPermission(
-          Permission.ReadExternalStorage);
+    if (status == _PickerPermissionStatus.canPrompt) {
+      Iterable<Future> futures = requiredPermissions.map((permission) {
+        return SimplePermissions.requestPermission(permission);
+      });
+      final newStatuses = await Future.wait(futures);
 
       setState(() {
-        status = newStatus;
+        statuses = newStatuses;
       });
-    }
-
-    if (status == PermissionStatus.deniedNeverAsk) {
+    } else if (status == _PickerPermissionStatus.grantFromSettings) {
       await SimplePermissions.openSettings();
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildBody(BuildContext context) {
     final ThemeData theme = Theme.of(context);
 
     if (status == null) {
@@ -144,9 +164,9 @@ class _DirectoryPickerDialogState extends State<_DirectoryPickerDialog>
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.max,
           ));
-    } else if (status == PermissionStatus.authorized) {
+    } else if (status == _PickerPermissionStatus.authorized) {
       return DirectoryList();
-    } else if (status == PermissionStatus.restricted) {
+    } else if (status == _PickerPermissionStatus.restricted) {
       return Center(
         child: Padding(
           padding: EdgeInsets.all(spacing * 2),
@@ -174,17 +194,45 @@ class _DirectoryPickerDialogState extends State<_DirectoryPickerDialog>
     }
   }
 
-  bool get canAskPermission {
-    return [PermissionStatus.denied, PermissionStatus.notDetermined]
-        .contains(status);
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: data.backgroundColor,
+      child: _buildBody(context),
+      shape: data.shape,
+    );
   }
 
+  List<Permission> get requiredPermissions {
+    List<Permission> permissions = [Permission.ReadExternalStorage];
+    if (data.allowFolderCreation) {
+      permissions.add(Permission.WriteExternalStorage);
+    }
+    return permissions;
+  }
+
+  DirectoryPickerData get data => DirectoryPickerData.of(context);
+
   String get message {
-    DirectoryPickerData data = DirectoryPickerData.of(context);
     if (data.message == null) {
       return 'App needs read access to your device storage to load directories';
     } else {
       return data.message;
+    }
+  }
+
+  _PickerPermissionStatus get status {
+    if (statuses == null) {
+      return null;
+    } else if (statuses
+        .every((status) => status == PermissionStatus.authorized)) {
+      return _PickerPermissionStatus.authorized;
+    } else if (statuses.contains(PermissionStatus.restricted)) {
+      return _PickerPermissionStatus.restricted;
+    } else if (statuses.contains(PermissionStatus.deniedNeverAsk)) {
+      return _PickerPermissionStatus.grantFromSettings;
+    } else {
+      return _PickerPermissionStatus.canPrompt;
     }
   }
 }
