@@ -10,13 +10,17 @@ A flutter package to pick directories and handles requesting required permission
   
 Add below line to your `pubspec.yaml` and run `flutter packages get`  
 ```  
-directory_picker: ^0.1.0
+directory_picker: ^0.2.0
 ```
 
 ## Permissions
 Add below line to your `android/app/src/main/AndroidManifest.xml`
 ```
 <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+```
+If you want to allow creating new folders directly from picker then add the below permission also
+```
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 ```
 
 ## Usage
@@ -40,6 +44,5 @@ if (newDirectory != null) {
 See [example](/example) app for more detailed usage.
 
 ## TODO
-- [ ] Add support to create new folders directory from picker.
 - [ ] Make `rootDirectory` optional.
 - [ ] Better levels of customisation for picker dialog.

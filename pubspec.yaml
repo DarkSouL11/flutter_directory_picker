@@ -1,6 +1,6 @@
 name: directory_picker
 description: A flutter package to pick directories and handles requesting required permissions as well.
-version: 0.1.0
+version: 0.2.0
 author: Sundeep Babbur <sundeep.sundeep11@gmail.com>
 homepage: https://github.com/DarkSouL11/flutter_directory_picker
 
