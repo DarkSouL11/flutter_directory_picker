@@ -119,11 +119,11 @@ class _DirectoryPickerDialogState extends State<_DirectoryPickerDialog>
   /// If silent is true then below function will not try to request permission
   /// if permission is not granter
   Future<void> _getPermissionStatus({bool silent = false}) async {
-    Iterable<Future<PermissionStatus>> futures =
-        requiredPermissions.map((permission) {
-      return SimplePermissions.getPermissionStatus(permission);
-    });
-    final newStatuses = await Future.wait(futures);
+    List<PermissionStatus> newStatuses = [];
+    for (Permission p in requiredPermissions) {
+      final status = await SimplePermissions.getPermissionStatus(p);
+      newStatuses.add(status);
+    }
 
     setState(() {
       statuses = newStatuses;
@@ -136,10 +136,11 @@ class _DirectoryPickerDialogState extends State<_DirectoryPickerDialog>
 
   Future<void> _requestPermission() async {
     if (status == _PickerPermissionStatus.canPrompt) {
-      Iterable<Future> futures = requiredPermissions.map((permission) {
-        return SimplePermissions.requestPermission(permission);
-      });
-      final newStatuses = await Future.wait(futures);
+      List<PermissionStatus> newStatuses = [];
+      for (Permission p in requiredPermissions) {
+        final status = await SimplePermissions.requestPermission(p);
+        newStatuses.add(status);
+      }
 
       setState(() {
         statuses = newStatuses;

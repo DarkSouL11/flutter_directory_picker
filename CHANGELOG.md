@@ -1,3 +1,7 @@
+## [0.2.2]
+
+- Fixes a bug with permission handling.
+
 ## [0.2.1]
 
 - Added a missing dependency to `pubspec.yaml`.

@@ -10,7 +10,7 @@ A flutter package to pick directories and handles requesting required permission
   
 Add below line to your `pubspec.yaml` and run `flutter packages get`  
 ```  
-directory_picker: ^0.2.1
+directory_picker: ^0.2.2
 ```
 
 ## Permissions
