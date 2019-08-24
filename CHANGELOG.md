@@ -1,3 +1,8 @@
+## [1.0.0]
+
+- Migrated to AndroidX.
+- Changed permission handling plugin from  `simple_permissions` to `permissions_handler`.
+
 ## [0.2.2]
 
 - Fixes a bug with permission handling.

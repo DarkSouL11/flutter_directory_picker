@@ -10,7 +10,7 @@ A flutter package to pick directories and handles requesting required permission
   
 Add below line to your `pubspec.yaml` and run `flutter packages get`  
 ```  
-directory_picker: ^0.2.2
+directory_picker: ^1.0.0
 ```
 
 ## Permissions
@@ -29,7 +29,7 @@ import 'package:directory_picker/directory_picker.dart';
 import 'package:path_provider/path_provider.dart';
 
 // In any callback call the below method 
-Directory newDirectory = await DirectoryPicker.pick(
+Directory newaDirectory = await DirectoryPicker.pick(
   context: context,
   rootDirectory: directory
 );
